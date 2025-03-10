@@ -1,89 +1,89 @@
-/// <reference types="@sveltejs/kit" />
-/// <reference lib="webworker" />
-import { build, files, version } from "$service-worker"
+// /// <reference types="@sveltejs/kit" />
+// /// <reference lib="webworker" />
+// import { build, files, version } from "$service-worker"
 
 
-// PWA - Service Worker
-declare let self: ServiceWorkerGlobalScope
-const CACHE = `cache-${version}`
-const ASSETS = [...build, ...files]
+// // PWA - Service Worker
+// declare let self: ServiceWorkerGlobalScope
+// const CACHE = `cache-${version}`
+// const ASSETS = [...build, ...files]
 
 
-// console.log({ build, files, version }) 
+// // console.log({ build, files, version }) 
 
-// install service-worker
-self.addEventListener('install', event => {
+// // install service-worker
+// self.addEventListener('install', event => {
 
-  async function addFilesToCache() {
-    const cache = await caches.open(CACHE)
-    await cache.addAll(ASSETS)
-  }
+//   async function addFilesToCache() {
+//     const cache = await caches.open(CACHE)
+//     await cache.addAll(ASSETS)
+//   }
 
-  event.waitUntil(addFilesToCache())
-})
-
-
-// activate service-worker
-self.addEventListener('activate', event => {
-
-  async function deleteOldCache() {
-    for (const key of await caches.keys()) {
-      if (key !== CACHE) {
-        await caches.delete(key)
-      }
-    }
-  }
-
-  event.waitUntil(deleteOldCache())
-})
+//   event.waitUntil(addFilesToCache())
+// })
 
 
-// listen to fetch events
-self.addEventListener('fetch', event => {
+// // activate service-worker
+// self.addEventListener('activate', event => {
+
+//   async function deleteOldCache() {
+//     for (const key of await caches.keys()) {
+//       if (key !== CACHE) {
+//         await caches.delete(key)
+//       }
+//     }
+//   }
+
+//   event.waitUntil(deleteOldCache())
+// })
+
+
+// // listen to fetch events
+// self.addEventListener('fetch', event => {
   
-  if (event.request.method !== 'GET') return
+//   if (event.request.method !== 'GET') return
 
-  async function response() {
-    const url = new URL(event.request.url)
-    const cache = await caches.open(CACHE)
+//   async function response() {
+//     const url = new URL(event.request.url)
+//     const cache = await caches.open(CACHE)
 
 
-    if (ASSETS.includes(url.pathname)) {
+//     if (ASSETS.includes(url.pathname)) {
       
-      const cachedResponse = await cache.match(url.pathname)
+//       const cachedResponse = await cache.match(url.pathname)
 
-      if (cachedResponse) {
-        return cachedResponse
+//       if (cachedResponse) {
+//         return cachedResponse
 
-      }
-    }
+//       }
+//     }
 
-    try {
+//     try {
       
-      const response = await fetch(event.request)
+//       const response = await fetch(event.request)
 
-      const isNotExtension = url.protocol !== 'http:'
-      const isSuccess = response.status === 200
+//       const isNotExtension = url.protocol !== 'http:'
+//       const isSuccess = response.status === 200
 
 
-      if (isNotExtension && isSuccess) {
-        cache.put(event.request, response.clone())
-      }
+//       if (isNotExtension && isSuccess) {
+//         cache.put(event.request, response.clone())
+//       }
 
-      return response
+//       return response
 
-    } catch {
+//     } catch {
 
-      // fall back to cache
+//       // fall back to cache
 
-      const cachedResponse = await cache.match(url.pathname)
-      if (cachedResponse) {
-        return cachedResponse
-      }
+//       const cachedResponse = await cache.match(url.pathname)
+//       if (cachedResponse) {
+//         return cachedResponse
+//       }
       
-      return new Response('Not found', {status: 400})
-    }
-  }
+//       return new Response('Not found', {status: 400})
+//     }
+//   }
 
-  response()
-})
+//   response()
+// })
